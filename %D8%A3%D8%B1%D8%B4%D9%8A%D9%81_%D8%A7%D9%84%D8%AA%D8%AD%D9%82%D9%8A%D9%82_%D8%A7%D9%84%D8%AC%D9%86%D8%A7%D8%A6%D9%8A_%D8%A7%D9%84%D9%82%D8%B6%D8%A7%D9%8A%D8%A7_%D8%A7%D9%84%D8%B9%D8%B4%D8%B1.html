@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أرشيف التحقيق الجنائي - القضايا العشر</title>
+    <style>
+        :root {
+            --bg-color: #080808;
+            --panel-bg: #111111;
+            --border-color: #222222;
+            --text-main: #e6edf3;
+            --accent-red: #ff3333;
+            --accent-amber: #ffaa00;
+            --sidebar-bg: #0d0d0d;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; direction: rtl; }
+
+        header { background: #000; border-bottom: 2px solid var(--accent-amber); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        header h1 { color: var(--accent-amber); font-size: 20px; text-shadow: 0 0 8px rgba(255,170,0,0.3); }
+        .top-btn { background: transparent; border: 1px solid var(--accent-amber); color: var(--accent-amber); padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .top-btn:hover { background: var(--accent-amber); color: #000; }
+
+        .main-container { display: flex; flex: 1; flex-direction: row; }
+        @media(max-width: 768px) { .main-container { flex-direction: column; } }
+
+        /* القائمة الجانبية */
+        aside { width: 260px; background: var(--sidebar-bg); border-left: 1px solid var(--border-color); padding: 20px 15px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+        .sidebar-title { font-size: 12px; color: #777; margin-bottom: 5px; font-weight: bold; padding-right: 5px; }
+        .nav-btn { background: #141414; border: 1px solid var(--border-color); color: var(--text-main); padding: 12px 15px; text-align: right; cursor: pointer; border-radius: 6px; font-size: 14px; font-weight: bold; transition: 0.2s; display: flex; align-items: center; justify-content: space-between; }
+        .nav-btn:hover { border-color: var(--accent-amber); color: var(--accent-amber); }
+        .nav-btn.active { background: var(--accent-amber); color: #000; border-color: var(--accent-amber); box-shadow: 0 0 10px rgba(255,170,0,0.3); }
+
+        /* محتوى الصفحة */
+        content { flex: 1; padding: 25px; background: var(--bg-color); overflow-y: auto; }
+        .section { display: none; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 25px; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); }
+        .section.active { display: block; }
+
+        .case-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; }
+        .case-card { background: #141414; border: 1px solid #333; border-radius: 8px; padding: 18px; cursor: pointer; transition: 0.3s; position: relative; }
+        .case-card.locked { opacity: 0.4; cursor: not-allowed; }
+        .case-card.unlocked:hover { border-color: var(--accent-amber); box-shadow: 0 0 10px rgba(255,170,0,0.2); }
+        .case-card h3 { color: var(--accent-amber); margin-bottom: 8px; font-size: 17px; }
+
+        .crime-scene-box { border: 2px dashed var(--accent-amber); padding: 18px; border-radius: 8px; background: #050505; }
+        .evidence-spot { background: #121212; border: 1px solid #444; padding: 12px; margin: 10px 0; border-radius: 6px; cursor: pointer; font-size: 15px; transition: 0.2s; }
+        .evidence-spot:hover { border-color: var(--accent-amber); background: #1a1a1a; }
+
+        .suspects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
+        .suspect-card { background: #141414; border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .suspect-card:hover { border-color: var(--accent-amber); }
+        .suspect-img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-amber); margin-bottom: 10px; }
+
+        .report-box { background: #0f0f0f; color: var(--text-main); border: 1px solid var(--accent-amber); padding: 20px; border-radius: 6px; margin-top: 15px; font-size: 15px; line-height: 1.6; }
+
+        .chat-box { height: 300px; background: #050505; border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; overflow-y: scroll; margin-bottom: 15px; }
+        .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 6px; max-width: 85%; font-size: 15px; line-height: 1.5; }
+        .msg.player { background: #5a2e00; color: #fff; margin-right: auto; border: 1px solid var(--accent-amber); }
+        .msg.suspect { background: #141414; color: var(--text-main); margin-left: auto; border: 1px solid #333; }
+        .msg.lawyer { background: var(--accent-amber); color: #000; text-align: center; margin: 8px auto; width: 100%; font-weight: bold; font-size: 14px; }
+        .questions-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; padding: 5px; }
+        .q-btn { background: #141414; border: 1px solid #444; color: var(--text-main); padding: 10px 14px; text-align: right; cursor: pointer; border-radius: 6px; font-size: 14px; }
+        .q-btn:hover { background: var(--accent-amber); color: #000; border-color: var(--accent-amber); }
+
+        .pinboard-container { position: relative; height: 420px; background: #050505; border: 2px solid var(--accent-amber); border-radius: 8px; overflow: hidden; }
+        .pin-item { position: absolute; background: #1a1200; border: 1px solid var(--accent-amber); padding: 10px 15px; border-radius: 6px; cursor: move; font-size: 14px; font-weight: bold; color: var(--accent-amber); }
+
+        .support-box { background: #120900; border: 2px solid var(--accent-amber); padding: 25px; border-radius: 10px; text-align: center; }
+        .support-box h3 { color: var(--accent-amber); font-size: 20px; margin-bottom: 15px; }
+        .iban-code { background: #000; color: var(--accent-amber); padding: 12px; font-size: 18px; font-weight: bold; border-radius: 6px; display: inline-block; margin: 10px 0; border: 1px dashed var(--accent-amber); letter-spacing: 1px; }
+
+        .footer-powered { padding: 10px; text-align: center; font-size: 12px; color: #555; border-top: 1px solid var(--border-color); margin-top: auto; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>أرشيف التحقيق الجنائي - القضايا العشر</h1>
+        <button class="top-btn" onclick="switchTab('cases')">اختر قضية لبدء التحقيق</button>
+    </header>
+
+    <div class="main-container">
+        <!-- القائمة الجانبية -->
+        <aside>
+            <div class="sidebar-title">التنقل الرئيسي</div>
+            <button class="nav-btn active" onclick="switchTab('cases')">اختر القضايا</button>
+
+            <div class="sidebar-title" style="margin-top: 15px;">أقسام التحقيق النشط</div>
+            <button class="nav-btn" onclick="switchTab('scene')">مسرح الجريمة</button>
+            <button class="nav-btn" onclick="switchTab('dossier')">ملفات المشتبه بهم</button>
+            <button class="nav-btn" onclick="switchTab('witnesses')">شهود العيان</button>
+            <button class="nav-btn" onclick="switchTab('reports')">التقارير الرسمية</button>
+            <button class="nav-btn" onclick="switchTab('interrogate')">غرفة الاستجواب</button>
+            <button class="nav-btn" onclick="switchTab('pinboard')">لوحة الأدلة والخيوط</button>
+            <button class="nav-btn" onclick="switchTab('support')" style="border-color: var(--accent-amber); color: var(--accent-amber);">دعم المحقق</button>
+
+            <div class="footer-powered">Powered by Hazem</div>
+        </aside>
+
+        <!-- المحتوى الرئيسي -->
+        <content>
+            <!-- 0. اختيار القضايا -->
+            <div id="cases" class="section active">
+                <h2 style="color: var(--accent-amber); margin-bottom: 10px;">📁 أرشيف قضايا مكتب التحقيقات الكبرى (مستوى الصعوبة: 9.5/10)</h2>
+                <p style="margin-bottom: 20px; color: #aaa; font-size: 14px;">القضايا مغلقة تسلسلياً. لا يمكنك الانتقال للقضية التالية إلا بعد حل القضية الحالية، يتم حفظ تقدمك وحالة تحقيقك تلقائياً للأبد.</p>
+                <div class="case-grid" id="cases-grid-container"></div>
+            </div>
+
+            <!-- 1. مسرح الجريمة -->
+            <div id="scene" class="section">
+                <h2 id="scene-title" style="color: var(--accent-amber); margin-bottom: 10px;">مسرح الجريمة</h2>
+                <p style="margin-bottom: 15px; color: #aaa;">قم بفحص تفاصيل الموقع والأدلة المادية بدقة للوصول لخيوط الجريمة:</p>
+                <div class="crime-scene-box" id="crime-scene-spots"></div>
+                <div id="evidence-details" class="report-box" style="display:none;"></div>
+            </div>
+
+            <!-- 2. ملفات المشتبه بهم -->
+            <div id="dossier" class="section">
+                <h2 style="color: var(--accent-amber); margin-bottom: 15px;">الملفات الشخصية للمشتبه بهم</h2>
+                <div class="suspects-grid" id="suspects-grid-container"></div>
+                <div id="suspect-details" class="report-box" style="display:none;"></div>
+            </div>
+
+            <!-- 3. شهود العيان -->
+            <div id="witnesses" class="section">
+                <h2 style="color: var(--accent-amber); margin-bottom: 15px;">إفادات شهود العيان والمحيطين</h2>
+                <div class="report-box">
+                    <strong>الشاهد الأول:</strong> "رأيت شخصاً يغادر المكان في حدود منتصف الليل وكان يبدو مرتبكاً ويحمل حقيبة داكنة."<br><br>
+                    <strong>الشاهد الثاني:</strong> "سمعت أصوات نقاش حاد وصوت إغلاق باب بقوة قبل اكتشاف الحادثة بساعة تقريباً."
+                </div>
+            </div>
+
+            <!-- 4. التقارير الرسمية -->
+            <div id="reports" class="section">
+                <h2 style="color: var(--accent-amber); margin-bottom: 15px;">الأرشيف والتقارير الرسمية (PDF)</h2>
+                <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+                    <button class="top-btn" onclick="showReport('forensic')">تقرير الطب الشرعي</button>
+                    <button class="top-btn" onclick="showReport('ballistics')">تقرير المقذوفات / الأدلة</button>
+                    <button class="top-btn" onclick="showReport('cctv')">كاميرات المراقبة (CCTV)</button>
+                </div>
+                <div id="report-content" class="report-box">اختر تقريراً رسمياً من الأعلى لعرض تفاصيله المستندية والدقيقة.</div>
+            </div>
+
+            <!-- 5. الاستجواب -->
+            <div id="interrogate" class="section">
+                <h2 style="color: var(--accent-amber); margin-bottom: 15px;">غرفة الاستجواب الموسعة (15+ سؤالاً)</h2>
+                <div style="margin-bottom: 15px;">
+                    <label style="font-weight: bold; margin-left: 10px;">اختر الشخص للاستجواب:</label>
+                    <select id="select-suspect" onchange="renderChat()" style="padding: 8px; background: #141414; color: #fff; border: 1px solid var(--accent-amber); border-radius: 5px; width: 220px; font-size: 15px;"></select>
+                </div>
+                <div class="chat-box" id="chat-box"></div>
+                <div class="questions-list" id="questions-list"></div>
+            </div>
+
+            <!-- 6. لوحة الأدلة والخيوط -->
+            <div id="pinboard" class="section">
+                <h2 style="color: var(--accent-amber); margin-bottom: 10px;">لوحة الأدلة والخيوط (Pinboard)</h2>
+                <p style="margin-bottom: 15px; color: #aaa;">قم بربط الأدلة والمشتبه بهم للوصول للحقيقة واتخاذ قرار الاتهام النهائي.</p>
+                <div class="pinboard-container" id="pinboard-area">
+                    <div class="pin-item" style="top:30px; right:30px;" draggable="true">📍 الدليل الرئيسي</div>
+                    <div class="pin-item" style="top:110px; right:30px;" draggable="true">📍 بصمات مسرح الجريمة</div>
+                    <div class="pin-item" style="top:30px; left:40px;" draggable="true">👤 المشتبه به الأول</div>
+                    <div class="pin-item" style="top:110px; left:40px;" draggable="true">👤 المشتبه به الثاني</div>
+                </div>
+            </div>
+
+            <!-- 7. دعم المحقق -->
+            <div id="support" class="section">
+                <div class="support-box">
+                    <h3>دعم وتطوير النظام وبرمجيات التحقيق</h3>
+                    <p style="margin: 10px 0; color: #ccc;">شكراً لكونك جزءاً من مجتمع المحققين الأذكياء. دعمكم هو الوقود لاستمرار وتطوير هذه المشاريع المعقدة.</p>
+                    <p><strong>اسم المحقق المستلم:</strong> Hazem Mahmoud</p>
+                    <p><strong>مصرف الراجحي</strong></p>
+                    <div class="iban-code">SA6680205259674222121013</div>
+                    <p style="margin-top: 10px; color: var(--accent-amber); font-weight: bold;">كل الشكر والتقدير لكل من ساهم ودعم هذا المشروع الاحترافي!</p>
+                </div>
+            </div>
+        </content>
+    </div>
+
+    <script>
+        const casesData = [
+            { id: 1, title: "القضية 1: الشقة 402", scene: "غرفة معيشة فاخرة، وُجد رجل أعمال مصاباً برصاصة ومادة منومة بالكأس.", suspects: ["سامر (الشريك)", "منى (الزوجة السابقة)", "رائد (الحارس)"] },
+            { id: 2, title: "القضية 2: القطار السريع 304", scene: "عربة قطار مغلقة تتحرك بسرعة 250 كم/س منتصف الليل.", suspects: ["طارق (المرتاد)", "سارة (المضيفة)", "خالد (المسافر)"] },
+            { id: 3, title: "القضية 3: المتحف الوطني والمخطوطة", scene: "قاعة الآثار الكبرى الساعة 3:15 فجراً أثناء عاصفة مطرية.", suspects: ["عادل (حارس الأمن)", "ريم (الباحث الأثري)", "فادي (مدير المعرض)"] },
+            { id: 4, title: "القضية 4: مختبر الكيمياء الحيوية السري", scene: "طابق تحت الأرض لمجمع أبحاث طبي، الساعة 11:00 شبراً.", suspects: ["د. ماجد", "نورا (المساعدة)", "سامي (عامل الصيانة)"] },
+            { id: 5, title: "القضية 5: المصرف المخفي والبورصة", scene: "برج التجارة المالي يوم الجمعة الخالي تماماً من الموظفين.", suspects: ["زياد (المدير المالي)", "هاني (المراجع)", "ليلى (مهندسة النظم)"] },
+            { id: 6, title: "القضية 6: الفندق الجبلي المعزول", scene: "فندق خشبي فوق قمة جبلية وسط عاصفة ثلجية أغلقت الطرق.", suspects: ["النزيل الأول", "مدير الفندق", "الطاهي"] },
+            { id: 7, title: "القضية 7: استوديو البث التلفزيوني", scene: "استوديو إخباري مغلق أثناء بث برنامج على الهواء مباشرة.", suspects: ["مُقدم البرامج", "مخرج البث", "الضيف المنتظر"] },
+            { id: 8, title: "القضية 8: الميناء البحري وسفينة الشحن", scene: "رصيف ميناء تجاري مظلم بجوار سفينة شحن عملاقة.", suspects: ["رئيس العمال", "بحار", "حارس البوابة"] },
+            { id: 9, title: "القضية 9: المسرح التاريخي والستار الأحمر", scene: "مسرح مدينة قديم أثناء البروفة النهائية منتصف الليل.", suspects: ["الممثل الرئيسي", "مصمم الإضاءة", "الكاتب المسرحي"] },
+            { id: 10, title: "القضية 10: نادي اليخوت الملكي", scene: "مرسى اليخوت الفاخر، رجل أعمال يُعثر عليه غارقاً.", suspects: ["شريك اليخت", "الوريث", "قبطان المرسى"] }
+        ];
+
+        let currentCaseId = parseInt(localStorage.getItem('current_case_id')) || 1;
+        let maxUnlockedCase = parseInt(localStorage.getItem('max_unlocked_case')) || 1;
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+
+            // تحديد الزر المناسب في القائمة الجانبية وتنشيطه
+            const btnMap = { 'cases': 0, 'scene': 1, 'dossier': 2, 'witnesses': 3, 'reports': 4, 'interrogate': 5, 'pinboard': 6, 'support': 7 };
+            const btns = document.querySelectorAll('aside .nav-btn');
+            if(btns[btnMap[tabId]]) btns[btnMap[tabId]].classList.add('active');
+
+            if(tabId === 'cases') renderCasesList();
+            if(tabId === 'scene') renderScene();
+            if(tabId === 'dossier') renderDossier();
+            if(tabId === 'interrogate') initInterrogation();
+        }
+
+        function renderCasesList() {
+            const container = document.getElementById('cases-grid-container');
+            container.innerHTML = '';
+            casesData.forEach(c => {
+                let isUnlocked = c.id <= maxUnlockedCase;
+                container.innerHTML += `
+                    <div class="case-card ${isUnlocked ? 'unlocked' : 'locked'}" onclick="${isUnlocked ? `selectCase(${c.id})` : ''}">
+                        <h3>${c.title}</h3>
+                        <p style="color:#ccc; font-size:14px; margin-top:5px;">${c.scene}</p>
+                        <p style="margin-top:12px; font-weight:bold; color:${isUnlocked ? '#2ea043' : '#ff4d4d'}; font-size:13px;">
+                            ${isUnlocked ? (c.id === currentCaseId ? '📍 القضية النشطة حالياً' : '✔️ متاحة للتحقيق') : '🔒 مقفلة (أنهِ السابقة أولاً)'}
+                        </p>
+                    </div>
+                `;
+            });
+        }
+
+        function selectCase(id) {
+            currentCaseId = id;
+            localStorage.setItem('current_case_id', id);
+            alert("تم الانتقال إلى " + casesData[id-1].title);
+            switchTab('scene');
+        }
+
+        function renderScene() {
+            const c = casesData[currentCaseId - 1];
+            document.getElementById('scene-title').innerText = "مسرح الجريمة: " + c.title;
+            const spots = document.getElementById('crime-scene-spots');
+            spots.innerHTML = `
+                <div class="evidence-spot" onclick="showEvidence('جثة الضحية', 'وُجدت في الموقع بتفاصيل دقيقة تشير إلى صراع مسبق وتوقيت الوفاة بدقة.')">📍 معاينة جثة الضحية بدقة</div>
+                <div class="evidence-spot" onclick="showEvidence('الأدلة المادية المحيطة', 'أدوات مسرح الجريمة، الآثار المتروكة، وبصمات الأصابع غير الواضحة.')">📍 فحص الأدلة المادية على الطاولة والأرض</div>
+                <div class="evidence-spot" onclick="showEvidence('منافذ الدخول والخروج', 'الأبواب، النوافذ، ومخارج الطوارئ والتحقق من تأمينها.')">📍 فحص الأبواب والنافذة أو المنافذ المغلقة</div>
+            `;
+        }
+
+        function showEvidence(title, desc) {
+            const box = document.getElementById('evidence-details');
+            box.style.display = 'block';
+            box.innerHTML = `<strong>${title}:</strong><br>${desc}`;
+        }
+
+        function renderDossier() {
+            const c = casesData[currentCaseId - 1];
+            const container = document.getElementById('suspects-grid-container');
+            container.innerHTML = '';
+            c.suspects.forEach((s, idx) => {
+                container.innerHTML += `
+                    <div class="suspect-card" onclick="showSuspectFile('${s}', ${idx})">
+                        <img src="https://images.unsplash.com/photo-${1500000000000 + idx*15000}?w=150" class="suspect-img" alt="${s}">
+                        <h3>${s}</h3>
+                        <p style="font-size:13px; color:#aaa;">مشتبه به رئيسي</p>
+                    </div>
+                `;
+            });
+        }
+
+        function showSuspectFile(name, idx) {
+            const box = document.getElementById('suspect-details');
+            box.style.display = 'block';
+            box.innerHTML = `<strong>ملف المشتبه به - ${name}:</strong><br>العمر: ${30 + idx*5} سنة.<br>السجل الشخصي والجنائي: تحليل دقيق يظهر ارتباطات سابقة ومصالح متعارضة مع الضحية.<br>دوافع محتملة: توترات مالية وشخصية قوية.`;
+        }
+
+        function showReport(type) {
+            const box = document.getElementById('report-content');
+            if(type === 'forensic') box.innerHTML = "<strong>تقرير الطب الشرعي الرسمي:</strong> تحديد ساعة الوفاة بدقة متناهية، وجود آثار مواد سامة أو مقاومة جسدية على الضحية.";
+            else if(type === 'ballistics') box.innerHTML = "<strong>تقرير المقذوفات والأدلة الجنائية:</strong> تطابق البصمات، الآثار الحيوية، والأدوات المستخدمة في الجريمة.";
+            else if(type === 'cctv') box.innerHTML = "<strong>سجلات كاميرات المراقبة (CCTV):</strong> رصد حركة دخول وخروج المشتبه بهم ضمن النطاق الزمني الدقيق للحدث.";
+        }
+
+        function initInterrogation() {
+            const c = casesData[currentCaseId - 1];
+            const select = document.getElementById('select-suspect');
+            select.innerHTML = '';
+            c.suspects.forEach(s => {
+                select.innerHTML += `<option value="${s}">${s}</option>`;
+            });
+            renderChat();
+        }
+
+        function renderChat() {
+            const suspect = document.getElementById('select-suspect').value;
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = `<div class="msg suspect">المحقق، أستمع إليك وجاهز للإجابة، لكنني بريء تماماً ولا علاقة لي بما حدث.</div>`;
+            renderQuestionsList(suspect);
+        }
+
+        function renderQuestionsList(suspect) {
+            const qList = document.getElementById('questions-list');
+            qList.innerHTML = '';
+            let questions = [
+                "أين كنت تحديداً وقت وقوع الجريمة؟ (حجة الغياب)",
+                "ما طبيعة تعاملاتك المالية أو الشخصية الأخيرة مع الضحية؟",
+                "لماذا وُجدت بصماتك أو أثرك بالقرب من مسرح الجريمة؟",
+                "هل لديك أي خلافات سابقة أو تهديدات متبادلة مع الضحية؟",
+                "من يمكنه تأكيد مكان وجودك في الفترة من منتصف الليل وحتى الصباح؟",
+                "ما رأيك في التقارير الطبية التي تشير لشبهة جنائية تعمدية؟",
+                "هل تمتلك مفتاحاً أو صلاحية دخول خاصة لمسرح الجريمة؟",
+                "لماذا حاولت إخفاء بعض الاتصالات أو السجلات عن التحقيق؟",
+                "هل واجهت أي ضغوط مالية مؤخراً دفعتك لاتخاذ خطوات غير محسوبة؟",
+                "ما تفسيرك لوجود شهود عيان رأوك بالقرب من المكان؟",
+                "هل تتهم شخصاً آخر من المشتبه بهم ولماذا؟",
+                "هل تناولت أي مشروبات أو تواجدت مع الضحية في نفس يوم الحادث؟",
+                "ما حقيقة الرسائل المتبادلة بينك وبين الضحية قبل الحادث بـ 48 ساعة؟",
+                "هل تم استجوابك في قضايا مشابهة من قبل؟",
+                "أنا أواجهك الآن بالأدلة القاطعة، فما ردك النهائي؟"
+            ];
+
+            questions.forEach((q, i) => {
+                qList.innerHTML += `<button class="q-btn" onclick="askSuspect('${suspect}', '${q}', ${i})">سؤال ${i+1}: ${q}</button>`;
+            });
+        }
+
+        function askSuspect(suspect, question, index) {
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<div class="msg player">${question}</div>`;
+
+            setTimeout(() => {
+                if (index === 2 || index === 7 || index === 14) {
+                    chatBox.innerHTML += `<div class="msg lawyer">⚠️ اعتراض قانوني صارم (محامي ${suspect}): أمنع موكلي تماماً عن الإجابة على هذا السؤال لحين استيفاء الإجراءات القانونية!</div>`;
+                } else {
+                    let replies = [
+                        "كنت في موقعي بمفردي ولم يلاحظني أحد.",
+                        "تعاملاتنا كانت رسمية تماماً ولا يوجد أي خلاف يستدعي الاتهام.",
+                        "ربما انتقلت بصماتي بحكم العمل الميداني أو المشترك.",
+                        "الخلافات البسيطة طبيعية ولا تعني أبداً ارتكاب جريمة.",
+                        "يمكن لزميلي أو أحد المقربين تأكيد مكاني في ذلك التوقيت.",
+                        "التقارير الفنية قد تخطئ، وأنا واثق من براءتي.",
+                        "الصلاحيات متاحة لعدد كبير من العاملين والمترددين.",
+                        "لم أخفِ شيئاً، هواتفي وسجلاتي مفتوحة أمامكم بالكامل.",
+                        "الأمور المالية كانت مستقرة ولا توجد أزمات طاحنة.",
+                        "الشهود بالتأكيد اشتبهوا في شخص آخر يشبهني بالمواصفات.",
+                        "لا أود اتهام أحد، لكن لكل شخص ظروفه ودوافعه الخاصة.",
+                        "لم ألتقِ به في ذلك اليوم نهائياً وخارج نطاق عملنا.",
+                        "تلك الرسائل تخص أموراً عملية وروتينية تماماً.",
+                        "سجلي نظيف ولم أتعرض لأي تحقيق أمني مسبق.",
+                        "أنا مصمم على براءتي ولن أضيف شيئاً آخر غير الحقيقة."
+                    ];
+                    chatBox.innerHTML += `<div class="msg suspect">${replies[index % replies.length]}</div>`;
+                }
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 600);
+        }
+
+        renderCasesList();
+    </script>
+</body>
+</html>
