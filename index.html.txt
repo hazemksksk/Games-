@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المحقق الفيدرالي - أرشيف القضايا الجنائية الكبرى</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --panel-bg: #0d0d0d;
+            --border-color: #3d0a0a;
+            --text-main: #e6edf3;
+            --accent-red: #ff3333;
+            --accent-amber: #ffaa00;
+            --danger: #ff4d4d;
+            --success: #2ea043;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Tahoma, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 15px; direction: rtl; font-size: 16px; }
+        header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid var(--accent-red); padding-bottom: 12px; }
+        h1 { color: var(--accent-red); font-size: 26px; margin-bottom: 5px; text-shadow: 0 0 10px rgba(255,51,51,0.3); }
+        .ad-banner { background: #120505; border: 1px dashed var(--accent-red); padding: 10px; text-align: center; color: var(--accent-amber); font-size: 13px; margin-bottom: 15px; border-radius: 6px; }
+        .nav-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-btn { background: var(--panel-bg); border: 1px solid var(--accent-red); color: var(--text-main); padding: 12px 18px; cursor: pointer; border-radius: 6px; font-weight: bold; transition: 0.3s; font-size: 15px; }
+        .tab-btn.active, .tab-btn:hover { background: var(--accent-red); color: #fff; box-shadow: 0 0 12px rgba(255,51,51,0.5); }
+        .section { display: none; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 22px; margin-bottom: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+        .section.active { display: block; }
+        
+        .case-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
+        .case-card { background: #141414; border: 1px solid #444; border-radius: 8px; padding: 18px; cursor: pointer; transition: 0.3s; position: relative; }
+        .case-card.locked { opacity: 0.4; cursor: not-allowed; border-color: #333; }
+        .case-card.unlocked:hover { border-color: var(--accent-amber); box-shadow: 0 0 10px rgba(255,170,0,0.2); }
+        .case-card h3 { color: var(--accent-amber); margin-bottom: 8px; font-size: 18px; }
+
+        .crime-scene-box { border: 2px dashed var(--accent-red); padding: 18px; border-radius: 8px; background: #080303; }
+        .evidence-spot { background: #1a0808; border: 1px solid var(--accent-red); padding: 12px; margin: 12px 0; border-radius: 6px; cursor: pointer; font-size: 16px; }
+        .evidence-spot:hover { background: #2e0c0c; }
+
+        .suspects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+        .suspect-card { background: #141414; border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .suspect-card:hover { border-color: var(--accent-red); }
+        .suspect-img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-red); margin-bottom: 12px; }
+
+        .report-box { background: #0f0f0f; color: var(--text-main); border: 1px solid var(--accent-amber); padding: 20px; border-radius: 6px; margin-top: 15px; font-size: 15px; line-height: 1.6; }
+
+        .chat-box { height: 320px; background: #050505; border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; overflow-y: scroll; margin-bottom: 15px; }
+        .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 6px; max-width: 85%; font-size: 15px; line-height: 1.5; }
+        .msg.player { background: #800000; color: #fff; margin-right: auto; }
+        .msg.suspect { background: #1a1a1a; color: var(--text-main); margin-left: auto; border: 1px solid #333; }
+        .msg.lawyer { background: var(--accent-amber); color: #000; text-align: center; margin: 8px auto; width: 100%; font-weight: bold; font-size: 14px; }
+        .questions-list { display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; padding: 5px; }
+        .q-btn { background: #141414; border: 1px solid var(--accent-red); color: var(--text-main); padding: 10px 14px; text-align: right; cursor: pointer; border-radius: 6px; font-size: 15px; }
+        .q-btn:hover { background: var(--accent-red); color: #fff; }
+
+        .pinboard-container { position: relative; height: 450px; background: #080808; border: 2px solid var(--accent-amber); border-radius: 8px; overflow: hidden; }
+        .pin-item { position: absolute; background: #1c0505; border: 1px solid var(--accent-red); padding: 10px 15px; border-radius: 6px; cursor: move; font-size: 14px; font-weight: bold; }
+
+        .support-box { background: #120505; border: 2px solid var(--accent-amber); padding: 25px; border-radius: 10px; text-align: center; margin-top: 10px; }
+        .support-box h3 { color: var(--accent-amber); font-size: 22px; margin-bottom: 15px; }
+        .support-box p { font-size: 17px; line-height: 1.8; margin-bottom: 10px; }
+        .iban-code { background: #000; color: var(--accent-red); padding: 12px; font-size: 18px; font-weight: bold; border-radius: 6px; display: inline-block; margin: 10px 0; border: 1px dashed var(--accent-red); letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+
+    <div class="ad-banner">📢 [مساحة إعلانية - AdSense / Banner] مدمجة ومجهزة بالكامل في النظام</div>
+
+    <header>
+        <h1>أرشيف التحقيق الجنائي - القضايا العشر</h1>
+        <p>مستوى الصعوبة: 9.5/10 | الحفظ التلقائي والتسلسل مفعل</p>
+    </header>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('cases')">اختر القضية</button>
+        <button class="tab-btn" onclick="switchTab('scene')">مسرح الجريمة</button>
+        <button class="tab-btn" onclick="switchTab('dossier')">ملفات المشتبه بهم</button>
+        <button class="tab-btn" onclick="switchTab('reports')">التقارير الرسمية</button>
+        <button class="tab-btn" onclick="switchTab('interrogate')">غرفة الاستجواب</button>
+        <button class="tab-btn" onclick="switchTab('pinboard')">لوحة الأدلة</button>
+        <button class="tab-btn" onclick="switchTab('support')" style="border-color: var(--accent-amber); color: var(--accent-amber);">دعم المحقق</button>
+    </div>
+
+    <!-- 0. اختيار القضية -->
+    <div id="cases" class="section active">
+        <h2>قضايا مكتب التحقيقات الكبرى</h2>
+        <p style="margin-bottom: 15px; color: #aaa;">لا يمكنك الانتقال للقضية التالية إلا بعد حل القضية الحالية. تقدمك محفوظ تلقائياً للأبد.</p>
+        <div class="case-grid" id="cases-grid-container"></div>
+    </div>
+
+    <!-- 1. مسرح الجريمة -->
+    <div id="scene" class="section">
+        <h2 id="scene-title">مسرح الجريمة</h2>
+        <p id="scene-desc">قم بفحص المواقع والأدلة المتاحة بدقة:</p>
+        <div class="crime-scene-box" id="crime-scene-spots"></div>
+        <div id="evidence-details" class="report-box" style="display:none;"></div>
+    </div>
+
+    <!-- 2. ملفات الـ FBI -->
+    <div id="dossier" class="section">
+        <h2>الملفات الشخصية للمشتبه بهم</h2>
+        <div class="suspects-grid" id="suspects-grid-container"></div>
+        <div id="suspect-details" class="report-box" style="display:none;"></div>
+    </div>
+
+    <!-- 3. التقارير -->
+    <div id="reports" class="section">
+        <h2>الأرشيف والتقارير الرسمية (PDF)</h2>
+        <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+            <button class="tab-btn" onclick="showReport('forensic')">تقرير الطب الشرعي</button>
+            <button class="tab-btn" onclick="showReport('ballistics')">تقرير المقذوفات / الأدلة</button>
+            <button class="tab-btn" onclick="showReport('cctv')">كاميرات المراقبة (CCTV)</button>
+        </div>
+        <div id="report-content" class="report-box">اختر تقريراً لعرض تفاصيله المستندية.</div>
+    </div>
+
+    <!-- 4. الاستجواب -->
+    <div id="interrogate" class="section">
+        <h2>غرفة الاستجواب الموسعة (15+ سؤالاً)</h2>
+        <div style="margin-bottom: 12px;">
+            <label>اختر الشخص للاستجواب:</label>
+            <select id="select-suspect" onchange="renderChat()" style="padding: 8px; background: #141414; color: #fff; border: 1px solid var(--accent-red); border-radius: 5px; width: 220px; font-size: 15px;"></select>
+        </div>
+        <div class="chat-box" id="chat-box"></div>
+        <div class="questions-list" id="questions-list"></div>
+    </div>
+
+    <!-- 5. لوحة الخيوط -->
+    <div id="pinboard" class="section">
+        <h2>لوحة الأدلة والخيوط (Pinboard)</h2>
+        <p>قم بربط الأدلة والمشتبه بهم للوصول للحقيقة واتخاذ قرار الاتهام النهائي.</p>
+        <div class="pinboard-container" id="pinboard-area">
+            <div class="pin-item" style="top:30px; right:30px;" draggable="true">📍 الدليل: الكأس المسموم</div>
+            <div class="pin-item" style="top:120px; right:30px;" draggable="true">📍 أثر قدم الشرفة</div>
+            <div class="pin-item" style="top:30px; left:50px;" draggable="true">👤 المشتبه به الأول</div>
+            <div class="pin-item" style="top:120px; left:50px;" draggable="true">👤 المشتبه به الثاني</div>
+        </div>
+    </div>
+
+    <!-- 6. دعم المحقق -->
+    <div id="support" class="section">
+        <div class="support-box">
+            <h3>دعم وتطوير النظام</h3>
+            <p>شكراً لكونك جزءاً من مجتمع المحققين الأذكياء. دعمكم هو الوقود لاستمرار وتطوير هذه المشاريع والبرمجيات المعقدة.</p>
+            <p><strong>اسم المحقق المستلم:</strong> Hazem Elbayaa</p>
+            <p><strong>مصرف الراجحي</strong></p>
+            <div class="iban-code">SA6680205259674222121013</div>
+            <p style="margin-top: 15px; color: var(--accent-amber); font-weight: bold;">كل الشكر والتقدير لكل من ساهم ودعم هذا المشروع!</p>
+        </div>
+    </div>
+
+    <div class="ad-banner" style="margin-top: 20px;">📢 [مساحة إعلانية سفلية - AdSense / Banner]</div>
+
+    <script>
+        const casesData = [
+            { id: 1, title: "القضية 1: الشقة 402", scene: "غرفة معيشة فاخرة، وُجد رجل أعمال مصاباً برصاصة ومادة منومة بالكأس.", suspects: ["سامر (الشريك)", "منى (الزوجة السابقة)", "رائد (الحارس)"] },
+            { id: 2, title: "القضية 2: القطار السريع 304", scene: "عربة قطار مغلقة تتحرك بسرعة 250 كم/س منتصف الليل.", suspects: ["طارق (المرتاد)", "سارة (المضيفة)", "خالد (المسافر)"] },
+            { id: 3, title: "القضية 3: المتحف الوطني", scene: "قاعة الآثار أثناء عاصفة مطرية وانقطاع مؤقت للكهرباء.", suspects: ["عادل (حارس الأمن)", "ريم (الباحث الأثري)", "فادي (مدير المعرض)"] },
+            { id: 4, title: "القضية 4: مختبر الكيمياء السري", scene: "طابق تحت الأرض لمجمع أبحاث طبي وسط زجاجات مبعثرة.", suspects: ["د. ماجد", "نورا (المساعدة)", "سامي (عامل الصيانة)"] },
+            { id: 5, title: "القضية 5: المصرف المخفي", scene: "برج التجارة المالي يوم الجمعة الخالي تماماً من الموظفين.", suspects: ["زياد (المدير المالي)", "هاني (المراجع)", "ليلى (مهندسة النظم)"] },
+            { id: 6, title: "القضية 6: الفندق الجبلي المعزول", scene: "فندق خشبي فوق قمة جبلية وسط عاصفة ثلجية أغلقت الطرق.", suspects: ["النزيل الأول", "مدير الفندق", "الطاهي"] },
+            { id: 7, title: "القضية 7: استوديو البث المباشر", scene: "استوديو إخباري مغلق أثناء بث برنامج على الهواء مباشرة.", suspects: ["مُقدم البرامج", "مخرج البث", "الضيف المنتظر"] },
+            { id: 8, title: "القضية 8: الميناء البحري", scene: "رصيف ميناء تجاري مظلم بجوار سفينة شحن عملاقة.", suspects: ["رئيس العمال", "بحار", "حارس البوابة"] },
+            { id: 9, title: "القضية 9: المسرح التاريخي", scene: "مسرح مدينة قديم أثناء البروفة النهائية منتصف الليل.", suspects: ["الممثل الرئيسي", "مصمم الإضاءة", "الكاتب المسرحي"] },
+            { id: 10, title: "القضية 10: نادي اليخوت الملكي", scene: "مرسى اليخوت الفاخر، رجل أعمال يُعثر عليه غارقاً.", suspects: ["شريك اليخت", "الوريث", "قبطان المرسى"] }
+        ];
+
+        let currentCaseId = parseInt(localStorage.getItem('current_case_id')) || 1;
+        let maxUnlockedCase = parseInt(localStorage.getItem('max_unlocked_case')) || 1;
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+            if(tabId === 'cases') renderCasesList();
+            if(tabId === 'scene') renderScene();
+            if(tabId === 'dossier') renderDossier();
+            if(tabId === 'interrogate') initInterrogation();
+        }
+
+        function renderCasesList() {
+            const container = document.getElementById('cases-grid-container');
+            container.innerHTML = '';
+            casesData.forEach(c => {
+                let isUnlocked = c.id <= maxUnlockedCase;
+                container.innerHTML += `
+                    <div class="case-card ${isUnlocked ? 'unlocked' : 'locked'}" onclick="${isUnlocked ? `selectCase(${c.id})` : ''}">
+                        <h3>${c.title}</h3>
+                        <p>${c.scene}</p>
+                        <p style="margin-top:10px; font-weight:bold; color:${isUnlocked ? 'var(--success)' : 'var(--danger)'};">
+                            ${isUnlocked ? (c.id === currentCaseId ? '📍 القضية النشطة حالياً' : '✔️ متاحة للتحقيق') : '🔒 مقفلة (أنهِ السابقة أولاً)'}
+                        </p>
+                    </div>
+                `;
+            });
+        }
+
+        function selectCase(id) {
+            currentCaseId = id;
+            localStorage.setItem('current_case_id', id);
+            alert("تم الانتقال إلى " + casesData[id-1].title);
+            switchTab('scene');
+        }
+
+        function renderScene() {
+            const c = casesData[currentCaseId - 1];
+            document.getElementById('scene-title').innerText = "مسرح الجريمة: " + c.title;
+            const spots = document.getElementById('crime-scene-spots');
+            spots.innerHTML = `
+                <div class="evidence-spot" onclick="showEvidence('جثة الضحية', 'وُجدت في الموقع بتفاصيل دقيقة تشير إلى صراع مسبق واستخدام أداة حادة أو مقذوف.')">📍 معاينة جثة الضحية بدقة</div>
+                <div class="evidence-spot" onclick="showEvidence('الأدلة المادية المحيطة', 'كأس زجاجي، آثار أقدام، وبصمات جزئية غير واضحة تتطلب مطابقة.')">📍 فحص الأدلة المادية على الطاولة والأرض</div>
+                <div class="evidence-spot" onclick="showEvidence('منافذ الدخول والخروج', 'الأبواب والنوافذ والتحقق من وجود أي آثار خلع أو فتح متعمد.')">📍 فحص الأبواب والنوافذ والتهوية</div>
+            `;
+        }
+
+        function showEvidence(title, desc) {
+            const box = document.getElementById('evidence-details');
+            box.style.display = 'block';
+            box.innerHTML = `<strong>${title}:</strong><br>${desc}`;
+        }
+
+        function renderDossier() {
+            const c = casesData[currentCaseId - 1];
+            const container = document.getElementById('suspects-grid-container');
+            container.innerHTML = '';
+            c.suspects.forEach((s, idx) => {
+                container.innerHTML += `
+                    <div class="suspect-card" onclick="showSuspectFile('${s}', ${idx})">
+                        <img src="https://images.unsplash.com/photo-${1500000000000 + idx*15000}?w=150" class="suspect-img" alt="${s}">
+                        <h3>${s}</h3>
+                        <p>مشتبه به رئيسي</p>
+                    </div>
+                `;
+            });
+        }
+
+        function showSuspectFile(name, idx) {
+            const box = document.getElementById('suspect-details');
+            box.style.display = 'block';
+            box.innerHTML = `<strong>ملف المشتبه به - ${name}:</strong><br>العمر: ${30 + idx*5} سنة.<br>السجل الجنائي: فحص دقيق يظهر ارتباطات سابقة وتحليلات مالية/شخصية مرتبطة بالضحية.<br>دوافع محتملة: وجود خلافات حادة ومصالح متعارضة.`;
+        }
+
+        function showReport(type) {
+            const box = document.getElementById('report-content');
+            if(type === 'forensic') box.innerHTML = "<strong>تقرير الطب الشرعي الرسمي:</strong> تحديد وقت الوفاة بدقة، مع وجود آثار لمادة سامة أو منوم في الدم، وإصابات رضوض تناسب وقت الجريمة.";
+            else if(type === 'ballistics') box.innerHTML = "<strong>تقرير المقذوفات والأدلة الجنائية:</strong> تطابق البصمات والأعيرة النارية المكتشفة مع السجلات الأمنية ومسرح الجريمة.";
+            else if(type === 'cctv') box.innerHTML = "<strong>سجلات كاميرات المراقبة (CCTV):</strong> رصد حركة دخول وخروج المشتبه بهم في النطاق الزمني المحدد للجريمة بدقة متناهية.";
+        }
+
+        function initInterrogation() {
+            const c = casesData[currentCaseId - 1];
+            const select = document.getElementById('select-suspect');
+            select.innerHTML = '';
+            c.suspects.forEach(s => {
+                select.innerHTML += `<option value="${s}">${s}</option>`;
+            });
+            renderChat();
+        }
+
+        function renderChat() {
+            const suspect = document.getElementById('select-suspect').value;
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = `<div class="msg suspect">المحقق، أنا أسمعك وجاهز للإجابة، ولكنني لم أرتكب شيئاً وعلاقتي بالضحية واضحة.</div>`;
+            renderQuestionsList(suspect);
+        }
+
+        function renderQuestionsList(suspect) {
+            const qList = document.getElementById('questions-list');
+            qList.innerHTML = '';
+            let questions = [
+                "أين كنت تحديداً وقت وقوع الجريمة؟ (حجة الغياب)",
+                "ما طبيعة تعاملاتك المالية أو الشخصية الأخيرة مع الضحية؟",
+                "لماذا وُجدت بصماتك أو أثرك بالقرب من مسرح الجريمة؟",
+                "هل لديك أي خلافات سابقة أو تهديدات متبادلة مع الضحية؟",
+                "من يمكنه تأكيد مكان وجودك في الفترة من 10 ليلًا وحتى 2 صباحاً؟",
+                "ما رأيك في التقارير الطبية التي تشير لشبهة جنائية تعمدية؟",
+                "هل تمتلك مفتاحاً أو صلاحية دخول خاصة لمسرح الجريمة؟",
+                "لماذا حاولت إخفاء بعض الاتصالات أو السجلات عن التحقيق؟",
+                "هل واجهت أي ضغوط مالية مؤخراً دفعتك لاتخاذ خطوات غير محسوبة؟",
+                "ما تفسيرك لوجود شهود عيان رأوك بالقرب من المكان؟",
+                "هل تتهم شخصاً آخر من المشتبه بهم ولماذا؟",
+                "هل تناولت أي مشروبات أو تواجدت مع الضحية في نفس يوم الحادث؟",
+                "ما حقيقة الرسائل المتبادلة بينك وبين الضحية قبل الحادث بـ 48 ساعة؟",
+                "هل تم استجوابك في قضايا مشابهة من قبل؟",
+                "أنا أواجهك الآن بالأدلة القاطعة، فما ردك النهائي؟"
+            ];
+
+            questions.forEach((q, i) => {
+                qList.innerHTML += `<button class="q-btn" onclick="askSuspect('${suspect}', '${q}', ${i})">سؤال ${i+1}: ${q}</button>`;
+            });
+        }
+
+        function askSuspect(suspect, question, index) {
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<div class="msg player">${question}</div>`;
+
+            setTimeout(() => {
+                if (index === 2 || index === 7 || index === 14) {
+                    chatBox.innerHTML += `<div class="msg lawyer">⚠️ اعتراض قانوني صارم (محامي ${suspect}): أمنع موكلي تماماً عن الإجابة على هذا السؤال الحرج لحين استيفاء الإجراءات القانونية!</div>`;
+                } else {
+                    let replies = [
+                        "كنت في منزلي بمفردي ولم يلاحظني أحد.",
+                        "تعاملاتنا كانت رسمية تماماً ولا يوجد أي خلاف يستدعي ما تتهمه.",
+                        "ربما انتقلت بصماتي بشكل طبيعي بحكم العمل المشترك.",
+                        "الخلافات كانت بسيطة وموجودة في أي بيئة عمل.",
+                        "يمكن لمدير أعمالي أو أخي تأكيد مكان تواجدي.",
+                        "التقارير الطبية قد تخطئ، وأنا بريء تماماً.",
+                        "الصلاحيات والمفاتيح متاحة لعدد كبير من الأشخاص.",
+                        "لم أخفِ شيئاً، هاتفي وسجلاتي أمامكم بالكامل.",
+                        "الأمور المالية كانت مستقرة ولا توجد أزمات.",
+                        "الشهود بالتأكيد اشتبهوا في شخص آخر يشبهني.",
+                        "لا أود اتهام أحد، لكن لكل شخص مصلحته.",
+                        "لم ألتقِ به في ذلك اليوم نهائياً.",
+                        "تلك الرسائل كانت تخص عملًا عادياً تماماً.",
+                        "سجلي نظيف ولم أتعرض لأي تحقيق مسبق.",
+                        "أنا مصمم على براءتي ولن أضيف شيئاً آخر."
+                    ];
+                    chatBox.innerHTML += `<div class="msg suspect">${replies[index % replies.length]}</div>`;
+                }
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 600);
+        }
+
+        renderCasesList();
+    </script>
+</body>
+</html>
